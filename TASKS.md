@@ -10,7 +10,6 @@
 ## 1) Branches & Protection
 1. Create branches: `dev` (default), `staging`, `prod`.
 2. Enable protection on all:
-   - Required PR, 1 approval
    - Dismiss stale reviews
    - Required checks
    - Restrict pushes to matching branches
