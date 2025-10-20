@@ -17,7 +17,7 @@
    - Allow force pushes: disabled
    - Allow deletions: disabled
 3. Set branch rules:
-   - `dev`: Allow pushes from feature branches
+   - `dev`: Only allow pushes via PR
    - `staging`: Only allow pushes via PR
    - `prod`: Only allow pushes via PR
 
