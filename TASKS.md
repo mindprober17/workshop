@@ -18,8 +18,8 @@
    - Allow deletions: disabled
 3. Set branch rules:
    - `dev`: Allow pushes from feature branches
-   - `staging`: Only allow pushes from `dev` via PR
-   - `prod`: Only allow pushes from `staging` via PR
+   - `staging`: Only allow pushes via PR
+   - `prod`: Only allow pushes via PR
 
 ## 1) Labels & PR Template
 - Create labels: `feature ✨`, `bugfix 🐛`, `docs 📓`, `Semver-Major`, `Semver-Minor`, `Semver-Patch`, `pre-release 🚀`, `release 🚀`
