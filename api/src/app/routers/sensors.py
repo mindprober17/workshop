@@ -136,6 +136,35 @@ def add_sensor(sensor: Sensor) -> Sensor:
     _SENSORS.append(sensor)
     return sensor
 
-# Teams must implement:
-#   GET /api/sensors/{mac_address}
-# Case-insensitive search; return 404 if not found.
+@router.get("/{mac_address}", response_model=Sensor)
+def get_sensor_by_mac(mac_address: str) -> Sensor:
+    """
+    Get a sensor by its MAC address.
+    
+    Args:
+        mac_address: MAC address in format AA:BB:CC:DD:EE:FF (case-insensitive)
+        
+    Returns:
+        Sensor: Complete sensor information
+        
+    Raises:
+        HTTPException: 404 if sensor not found, 422 if invalid MAC format
+    """
+    # Validate MAC address format
+    if not MAC_REGEX.match(mac_address):
+        raise HTTPException(
+            status_code=422, 
+            detail="Invalid MAC address format. Expected format: AA:BB:CC:DD:EE:FF"
+        )
+    
+    # Case-insensitive search
+    mac_lower = mac_address.lower()
+    for sensor in _SENSORS:
+        if sensor.mac_address.lower() == mac_lower:
+            return sensor
+    
+    # Sensor not found
+    raise HTTPException(
+        status_code=404, 
+        detail=f"Sensor with MAC address {mac_address} not found"
+    )

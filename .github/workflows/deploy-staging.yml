@@ -1,0 +1,49 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [staging]
+
+jobs:
+  deploy-staging:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Display deployment info
+        run: |
+          echo "🚀 Deploying to Staging Environment"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Actor: ${{ github.actor }}"
+          echo "Timestamp: $(date)"
+          echo "API Port: ${{ secrets.API_PORT || '8000' }}"
+          echo "API Title: ${{ secrets.API_TITLE || 'Sensor Workshop API' }}"
+          echo "API Environment: ${{ secrets.API_ENV || 'staging' }}"
+      
+      - name: Simulate deployment steps
+        run: |
+          echo "📦 Installing dependencies..."
+          sleep 2
+          echo "✅ Dependencies installed"
+          
+          echo "🔧 Running configuration..."
+          sleep 2
+          echo "✅ Configuration completed"
+          
+          echo "🚀 Starting application..."
+          sleep 3
+          echo "✅ Application started successfully"
+          
+          echo "🧪 Running health checks..."
+          sleep 2
+          echo "✅ Health checks passed"
+      
+      - name: Deployment success
+        run: |
+          echo "🎉 Staging deployment completed successfully!"
+          echo "Environment: staging"
+          echo "Status: healthy"
+          echo "URL: https://staging-api.example.com"

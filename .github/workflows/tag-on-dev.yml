@@ -1,0 +1,118 @@
+name: Tag on Dev Merge
+
+on:
+  push:
+    branches: [dev]
+
+jobs:
+  tag-version:
+    runs-on: ubuntu-latest
+    if: github.event.head_commit.message != github.event.before
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Get latest PR labels
+        id: get-labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: commits } = await github.rest.repos.listCommits({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              per_page: 1
+            });
+            
+            const commitMessage = commits[0].commit.message;
+            const prMatch = commitMessage.match(/Merge pull request #(\d+)/);
+            
+            if (prMatch) {
+              const prNumber = prMatch[1];
+              const { data: pr } = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber
+              });
+              
+              const labels = pr.labels.map(label => label.name);
+              const semverLabels = ['Semver-Major', 'Semver-Minor', 'Semver-Patch'];
+              const semverLabel = labels.find(label => semverLabels.includes(label));
+              
+              if (semverLabel) {
+                console.log(`Found Semver label: ${semverLabel}`);
+                core.setOutput('semver_label', semverLabel);
+              } else {
+                console.log('No Semver label found');
+                core.setOutput('semver_label', '');
+              }
+            } else {
+              console.log('No PR merge commit found');
+              core.setOutput('semver_label', '');
+            }
+      
+      - name: Read current version
+        id: read-version
+        run: |
+          if [ -f VERSION ]; then
+            CURRENT_VERSION=$(cat VERSION)
+            echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          else
+            echo "current_version=1.0.0" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Calculate new version
+        id: calc-version
+        run: |
+          CURRENT_VERSION="${{ steps.read-version.outputs.current_version }}"
+          SEMVER_LABEL="${{ steps.get-labels.outputs.semver_label }}"
+          
+          if [ -z "$SEMVER_LABEL" ]; then
+            echo "No Semver label found, skipping version bump"
+            echo "new_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+            echo "should_tag=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
+          
+          case "$SEMVER_LABEL" in
+            "Semver-Major")
+              major=$((major + 1))
+              minor=0
+              patch=0
+              ;;
+            "Semver-Minor")
+              minor=$((minor + 1))
+              patch=0
+              ;;
+            "Semver-Patch")
+              patch=$((patch + 1))
+              ;;
+          esac
+          
+          NEW_VERSION="$major.$minor.$patch"
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "should_tag=true" >> $GITHUB_OUTPUT
+          echo "Updated version from $CURRENT_VERSION to $NEW_VERSION"
+      
+      - name: Update VERSION file
+        if: steps.calc-version.outputs.should_tag == 'true'
+        run: |
+          echo "${{ steps.calc-version.outputs.new_version }}" > VERSION
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add VERSION
+          git commit -m "chore: bump version to ${{ steps.calc-version.outputs.new_version }}"
+          git push
+      
+      - name: Create and push tag
+        if: steps.calc-version.outputs.should_tag == 'true'
+        run: |
+          TAG_NAME="v${{ steps.calc-version.outputs.new_version }}"
+          git tag -a "$TAG_NAME" -m "Release $TAG_NAME"
+          git push origin "$TAG_NAME"
+          echo "Created tag: $TAG_NAME"

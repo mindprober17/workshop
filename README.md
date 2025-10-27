@@ -86,7 +86,6 @@ curl http://localhost:8000/api/sensors
 │   │   ├── deploy-prod.yml
 │   │   ├── deploy-staging.yml
 │   │   ├── label-by-branch.yml
-│   │   ├── python-ci.yml
 │   │   ├── require-semver.yml
 │   │   └── tag-on-prod.yml
 │   └── PULL_REQUEST_TEMPLATE.md

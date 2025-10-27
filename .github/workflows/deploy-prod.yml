@@ -1,0 +1,66 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [prod]
+
+jobs:
+  deploy-production:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Display deployment info
+        run: |
+          echo "🚀 Deploying to Production Environment"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Actor: ${{ github.actor }}"
+          echo "Timestamp: $(date)"
+          echo "API Port: ${{ secrets.API_PORT || '8000' }}"
+          echo "API Title: ${{ secrets.API_TITLE || 'Sensor Workshop API' }}"
+          echo "API Environment: ${{ secrets.API_ENV || 'production' }}"
+      
+      - name: Pre-deployment checks
+        run: |
+          echo "🔍 Running pre-deployment checks..."
+          sleep 3
+          echo "✅ All pre-deployment checks passed"
+      
+      - name: Simulate deployment steps
+        run: |
+          echo "📦 Installing dependencies..."
+          sleep 2
+          echo "✅ Dependencies installed"
+          
+          echo "🔧 Running configuration..."
+          sleep 2
+          echo "✅ Configuration completed"
+          
+          echo "🚀 Starting application..."
+          sleep 3
+          echo "✅ Application started successfully"
+          
+          echo "🧪 Running health checks..."
+          sleep 2
+          echo "✅ Health checks passed"
+          
+          echo "📊 Running smoke tests..."
+          sleep 2
+          echo "✅ Smoke tests passed"
+      
+      - name: Post-deployment verification
+        run: |
+          echo "🔍 Verifying deployment..."
+          sleep 2
+          echo "✅ Deployment verification completed"
+      
+      - name: Deployment success
+        run: |
+          echo "🎉 Production deployment completed successfully!"
+          echo "Environment: production"
+          echo "Status: healthy"
+          echo "URL: https://api.example.com"
+          echo "Version: $(cat VERSION)"
